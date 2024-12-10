@@ -13,4 +13,4 @@ Steps:
 
 * Open the index.html file in the main folder
 
-* Use the run with debugging option in the run tab of the task bar
+* Use the option go live in visual studio at the bottom
