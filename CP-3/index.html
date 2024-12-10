@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Yoga Trainer - Login</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: radial-gradient(circle, rgba(0, 0, 0, 1) 0%, rgba(18,18,18,1) 100%);
+    }
+    .wrapper {
+      position: relative;
+      width: 400px;
+      height: 500px;
+      background: #121212;
+      box-shadow: 0 0 20px #0ef;
+      border-radius: 20px;
+      padding: 40px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    h2 {
+      font-size: 30px;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .input-group {
+      position: relative;
+      margin: 20px 0;
+      background: #000;
+      border-bottom: 2px solid #0ef;
+    }
+    .input-group input {
+      width: calc(100% - 20px);
+      height: 40px;
+      font-size: 16px;
+      color: #fff;
+      padding: 0 10px;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #fff;
+    }
+    button {
+      width: 100%;
+      height: 40px;
+      background: #0ef;
+      color: #000;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0 0 15px #0ef;
+      margin-top: 20px;
+    }
+    .remember {
+      color: #fff;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .remember input {
+      margin-right: 10px;
+      accent-color: #0ef;
+    }
+    .link {
+      color: #0ef;
+      text-align: center;
+      text-decoration: none;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <h2>Login</h2>
+    <div class="input-group">
+      <input type="text" id="loginUsername" required placeholder="Username">
+    </div>
+    <div class="input-group">
+      <input type="password" id="loginPassword" required placeholder="Password">
+    </div>
+    <div class="remember">
+      <input type="checkbox" id="rememberMe"> <label for="rememberMe">Remember me</label>
+    </div>
+    <button onclick="checkLogin()">Login</button>
+    <p class="link" onclick="toggleForms()">Don't have an account? Sign Up</p>
+  </div>
+  <div class="wrapper" style="display: none;">
+    <h2>Sign Up</h2>
+    <div class="input-group">
+      <input type="text" id="signupUsername" required placeholder="Username">
+    </div>
+    <div class="input-group">
+      <input type="email" id="signupEmail" required placeholder="Email">
+    </div>
+    <div class="input-group">
+      <input type="password" id="signupPassword" required placeholder="Password">
+    </div>
+    <button onclick="registerUser()">Sign Up</button>
+    <p class="link" onclick="toggleForms()">Already have an account? Sign In</p>
+  </div>
+  <script>
+    function toggleForms() {
+      const forms = document.querySelectorAll('.wrapper');
+      forms.forEach(form => {
+        form.style.display = (form.style.display === 'none' ? 'flex' : 'none');
+      });
+    }
+
+    function registerUser() {
+      event.preventDefault();
+      const username = document.getElementById('signupUsername').value;
+      const password = document.getElementById('signupPassword').value;
+      const email = document.getElementById('signupEmail').value;
+      localStorage.setItem(username, JSON.stringify({email: email, password: password}));
+      alert('Registration successful. Please log in.');
+      toggleForms();
+    }
+
+    function checkLogin() {
+      event.preventDefault();
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      const user = JSON.parse(localStorage.getItem(username));
+      if (user && user.password === password) {
+        alert('Login successful');
+        window.location.href = 'home.html';
+      } else {
+        alert('Invalid username or password');
+      }
+    }
+  </script>
+</body>
+</html>
