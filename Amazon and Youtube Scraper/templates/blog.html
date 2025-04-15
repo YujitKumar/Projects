@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Web Scraping Guide</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="{{ url_for('dashboard') }}" class="nav-brand">Web Scraper</a>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('blog') }}" class="nav-link">Blog</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="blog-container">
+            <h1 class="blog-title">Web Scraping Guide</h1>
+
+            <article class="blog-post">
+                <h2>What is Web Scraping?</h2>
+                <p>Web scraping is the automated process of extracting data from websites. It's like having a digital assistant that can read web pages and collect specific information quickly and accurately. This technology has revolutionized data collection and analysis across various industries.</p>
+
+                <h3>Key Components of Web Scraping</h3>
+                <ul>
+                    <li><strong>HTTP Requests:</strong> The foundation of web scraping, used to fetch web pages</li>
+                    <li><strong>HTML Parsing:</strong> Converting raw HTML into a structured format</li>
+                    <li><strong>Data Extraction:</strong> Identifying and collecting specific information</li>
+                    <li><strong>Data Storage:</strong> Saving the extracted data in a usable format</li>
+                </ul>
+                
+                <img src="https://raw.githubusercontent.com/python-engineer/python-fun/master/web-scraping/images/web-scraping-flow.png" alt="Web Scraping Flow" class="blog-image">
+                <p class="image-caption">The Web Scraping Process Flow</p>
+
+                <div class="info-box">
+                    <div class="info-box-title">Common Applications</div>
+                    <ul>
+                        <li>Price Monitoring and Comparison</li>
+                        <li>Market Research and Analysis</li>
+                        <li>Content Aggregation</li>
+                        <li>Lead Generation</li>
+                        <li>Research and Data Collection</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="blog-post">
+                <h2>Getting Started with Web Scraping</h2>
+                
+                <h3>1. Basic HTML Request</h3>
+                <p>The first step in web scraping is making HTTP requests to fetch web pages. Python's requests library makes this process straightforward and efficient.</p>
+                
+                <div class="code-block">
+                    <div class="code-title">Python - Basic Web Request</div>
+                    <pre>
+import requests
+import time
+
+def fetch_webpage(url):
+    try:
+        # Add headers to mimic a browser
+        headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/91.0.4472.124'
+        }
+        
+        # Make the request
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()  # Raise an error for bad status codes
+        
+        return response.text
+    except requests.RequestException as e:
+        print(f"Error fetching {url}: {e}")
+        return None
+
+# Example usage
+url = "https://example.com"
+html_content = fetch_webpage(url)
+if html_content:
+    print("Successfully retrieved the webpage!")
+</pre>
+                </div>
+
+                <h3>2. Parsing HTML with BeautifulSoup</h3>
+                <p>BeautifulSoup is a powerful library that makes parsing HTML content intuitive and efficient. It provides various methods to navigate and search the HTML structure.</p>
+
+                <div class="code-block">
+                    <div class="code-title">Python - HTML Parsing Example</div>
+                    <pre>
+from bs4 import BeautifulSoup
+import requests
+
+def scrape_articles(url):
+    # Fetch the webpage
+    html_content = fetch_webpage(url)
+    if not html_content:
+        return []
+    
+    # Parse HTML
+    soup = BeautifulSoup(html_content, 'html.parser')
+    articles = []
+    
+    # Find all article elements
+    for article in soup.find_all('article', class_='post'):
+        title = article.find('h2').text.strip()
+        summary = article.find('div', class_='summary').text.strip()
+        link = article.find('a')['href']
+        
+        articles.append({
+            'title': title,
+            'summary': summary,
+            'link': link
+        })
+    
+    return articles
+</pre>
+                </div>
+            </article>
+
+            <article class="blog-post">
+                <h2>Advanced Scraping Techniques</h2>
+                
+                <h3>1. Handling Dynamic Content with Selenium</h3>
+                <p>Modern websites often use JavaScript to load content dynamically. Selenium automates a real browser, allowing you to interact with these dynamic elements.</p>
+
+                <div class="code-block">
+                    <div class="code-title">Python - Selenium for Dynamic Content</div>
+                    <pre>
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+def scrape_dynamic_content(url):
+    options = webdriver.ChromeOptions()
+    options.add_argument('--headless')  # Run in headless mode
+    driver = webdriver.Chrome(options=options)
+    
+    try:
+        driver.get(url)
+        
+        # Wait for dynamic content to load
+        element = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "dynamic-content"))
+        )
+        
+        # Scroll to load more content
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(2)  # Wait for content to load
+        
+        # Extract data
+        items = driver.find_elements(By.CLASS_NAME, "item")
+        return [item.text for item in items]
+        
+    finally:
+        driver.quit()
+</pre>
+                </div>
+
+                <h3>2. Handling Pagination</h3>
+                <p>Many websites split their content across multiple pages. Here's how to handle pagination effectively:</p>
+
+                <div class="code-block">
+                    <div class="code-title">Python - Pagination Handler</div>
+                    <pre>
+def scrape_all_pages(base_url, max_pages=5):
+    all_data = []
+    page = 1
+    
+    while page <= max_pages:
+        url = f"{base_url}?page={page}"
+        print(f"Scraping page {page}")
+        
+        # Fetch and parse the page
+        data = scrape_page(url)
+        if not data:  # No more data found
+            break
+            
+        all_data.extend(data)
+        page += 1
+        
+        # Be nice to the server
+        time.sleep(2)
+    
+    return all_data
+</pre>
+                </div>
+            </article>
+
+            <article class="blog-post">
+                <h2>Best Practices and Ethics</h2>
+
+                <h3>1. Rate Limiting and Politeness</h3>
+                <p>Being a good citizen of the web means not overwhelming servers with too many requests. Here's how to implement rate limiting:</p>
+
+                <div class="code-block">
+                    <div class="code-title">Python - Rate Limiter</div>
+                    <pre>
+class RateLimiter:
+    def __init__(self, requests_per_second=1):
+        self.delay = 1.0 / requests_per_second
+        self.last_request = 0
+    
+    def wait(self):
+        now = time.time()
+        elapsed = now - self.last_request
+        if elapsed < self.delay:
+            time.sleep(self.delay - elapsed)
+        self.last_request = time.time()
+
+# Usage
+limiter = RateLimiter(requests_per_second=0.5)  # 2 seconds between requests
+for url in urls:
+    limiter.wait()
+    scrape_url(url)
+</pre>
+                </div>
+
+                <h3>2. Error Handling and Resilience</h3>
+                <p>Robust error handling ensures your scraper can handle network issues, malformed HTML, and other problems:</p>
+
+                <div class="code-block">
+                    <div class="code-title">Python - Error Handling</div>
+                    <pre>
+def resilient_scraper(url, max_retries=3):
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, timeout=10)
+            response.raise_for_status()
+            return response.text
+        except requests.RequestException as e:
+            print(f"Attempt {attempt + 1} failed: {e}")
+            if attempt + 1 == max_retries:
+                print("Max retries reached")
+                return None
+            time.sleep(2 ** attempt)  # Exponential backoff
+</pre>
+                </div>
+
+                <div class="info-box">
+                    <div class="info-box-title">Ethical Guidelines</div>
+                    <ul>
+                        <li>Always check and respect robots.txt</li>
+                        <li>Implement reasonable rate limiting</li>
+                        <li>Identify your scraper in the User-Agent</li>
+                        <li>Cache results when possible</li>
+                        <li>Minimize server load</li>
+                    </ul>
+                </div>
+            </article>
+
+            <article class="blog-post">
+                <h2>Data Storage and Processing</h2>
+                
+                <h3>1. Saving to Different Formats</h3>
+                <p>After collecting data, it's important to store it in a suitable format for analysis:</p>
+
+                <div class="code-block">
+                    <div class="code-title">Python - Data Export Functions</div>
+                    <pre>
+import json
+import csv
+import pandas as pd
+
+def save_data(data, filename, format='csv'):
+    if format == 'csv':
+        with open(f"{filename}.csv", 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=data[0].keys())
+            writer.writeheader()
+            writer.writerows(data)
+    elif format == 'json':
+        with open(f"{filename}.json", 'w', encoding='utf-8') as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    elif format == 'excel':
+        df = pd.DataFrame(data)
+        df.to_excel(f"{filename}.xlsx", index=False)
+</pre>
+                </div>
+            </article>
+        </div>
+    </div>
+</body>
+</html>

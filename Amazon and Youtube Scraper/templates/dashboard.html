@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Web Scraper</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="{{ url_for('dashboard') }}" class="nav-brand">Web Scraper</a>
+            <div class="nav-links">
+                <a href="{{ url_for('dashboard') }}" class="nav-link">Dashboard</a>
+                <a href="{{ url_for('blog') }}" class="nav-link">Blog</a>
+                <a href="{{ url_for('logout') }}" class="nav-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="dashboard">
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Welcome, {{ session['username'] }}</h1>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="scraper-options">
+                <div class="scraper-card">
+                    <h2 class="scraper-title">YouTube Channel Scraper</h2>
+                    <form action="{{ url_for('scrape_youtube') }}" method="post" class="scraper-form">
+                        <div class="form-group">
+                            <label for="youtube_query">YouTube Channel URL</label>
+                            <input type="text" id="youtube_query" name="query" required placeholder="https://www.youtube.com/@ChannelName/videos">
+                            <small class="form-text">Enter the channel's videos page URL</small>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn" data-loading-text="Scraping YouTube...">Scrape YouTube</button>
+                            {% if youtube_files.csv or youtube_files.excel or youtube_files.json %}
+                                <form action="{{ url_for('clear_data', scraper='youtube') }}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-clear">Clear Data</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        <div class="progress-message"></div>
+                    </form>
+                    {% if youtube_files.csv or youtube_files.excel or youtube_files.json %}
+                        <div class="download-section">
+                            <h3>Download YouTube Data</h3>
+                            <div class="download-buttons">
+                                {% if youtube_files.csv %}
+                                    <a href="{{ url_for('download_file', scraper='youtube', format='csv') }}" class="btn btn-download">Download CSV</a>
+                                {% endif %}
+                                {% if youtube_files.excel %}
+                                    <a href="{{ url_for('download_file', scraper='youtube', format='excel') }}" class="btn btn-download">Download Excel</a>
+                                {% endif %}
+                                {% if youtube_files.json %}
+                                    <a href="{{ url_for('download_file', scraper='youtube', format='json') }}" class="btn btn-download">Download JSON</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="scraper-card">
+                    <h2 class="scraper-title">Amazon Scraper</h2>
+                    <form action="{{ url_for('scrape_amazon') }}" method="post" class="scraper-form">
+                        <div class="form-group">
+                            <label for="amazon_query">Search Query</label>
+                            <input type="text" id="amazon_query" name="query" required placeholder="https://www.amazon.in/s?k=laptop&crid=3BMA2X9SQNAZT&sprefix=laptop%2Caps%2C289&ref=nb_sb_noss_2">
+                            <small class="form-text">Enter the Amazon search results URL</small>
+                        </div>
+                        <div class="form-group">
+                            <label for="amazon_pages">Number of Pages to Scrape</label>
+                            <input type="number" id="amazon_pages" name="max_pages" min="1" max="20" value="1">
+                            <small class="form-text">Maximum 20 pages allowed</small>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" class="btn" data-loading-text="Scraping Amazon...">Scrape Amazon</button>
+                            {% if amazon_files.csv or amazon_files.excel or amazon_files.json %}
+                                <form action="{{ url_for('clear_data', scraper='amazon') }}" method="post" style="display: inline;">
+                                    <button type="submit" class="btn btn-clear">Clear Data</button>
+                                </form>
+                            {% endif %}
+                        </div>
+                        <div class="progress-message"></div>
+                    </form>
+                    {% if amazon_files.csv or amazon_files.excel or amazon_files.json %}
+                        <div class="download-section">
+                            <h3>Download Amazon Data</h3>
+                            <div class="download-buttons">
+                                {% if amazon_files.csv %}
+                                    <a href="{{ url_for('download_file', scraper='amazon', format='csv') }}" class="btn btn-download">Download CSV</a>
+                                {% endif %}
+                                {% if amazon_files.excel %}
+                                    <a href="{{ url_for('download_file', scraper='amazon', format='excel') }}" class="btn btn-download">Download Excel</a>
+                                {% endif %}
+                                {% if amazon_files.json %}
+                                    <a href="{{ url_for('download_file', scraper='amazon', format='json') }}" class="btn btn-download">Download JSON</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const forms = document.querySelectorAll('.scraper-form');
+            
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    const button = this.querySelector('.btn');
+                    const loadingText = button.getAttribute('data-loading-text');
+                    const progressMessage = this.querySelector('.progress-message');
+                    
+                    button.setAttribute('data-original-text', button.textContent);
+                    button.disabled = true;
+                    button.textContent = loadingText;
+                    
+                    progressMessage.textContent = 'Scraping in progress... This may take a few minutes.';
+                    progressMessage.style.color = '#666';
+                    progressMessage.style.marginTop = '10px';
+                    progressMessage.style.fontSize = '14px';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
